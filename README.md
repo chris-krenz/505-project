@@ -1,7 +1,6 @@
 ## About
 
-This simple program is a living template for Python projects.
-
+This is a project for CS505 at Boston University.  
 
 ## Install
 
@@ -14,11 +13,13 @@ pip install -r requirements.txt
 ## Usage
 
 ### Unit Tests
+
 ```console
 pytest
 ```
 
 ### Coverage
+
 ```console
 coverage run -m pytest
 coverage [report | html]
@@ -29,6 +30,7 @@ coverage [report | html]
 ### Unit Tests
 
 #### All tests passed...
+
 ```console
 =================== test session starts ===================
 platform win32 -- Python 3.10.7, pytest-7.4.4, pluggy-1.4.0
@@ -77,6 +79,7 @@ FAILED unit_tests/test_matmul.py::test_matmul - assert -22 == -21
 ```
 
 ### Coverage
+
 ```console
 Name                        Stmts   Miss  Cover
 -----------------------------------------------
@@ -89,7 +92,6 @@ TOTAL                          30      1    97%
 ## Contributors
 
 Chris Krenz
-
 
 ## License
 
