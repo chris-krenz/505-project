@@ -4,7 +4,12 @@ Imports config variables, initializes loggers, and tests the matmul function.
 """
 
 from utils import logger
-from utils import matmul
+# from utils import matmul
+
+import fetcher
+import extractor
+import preprocessor
+import classifier
 
 
 def main():
@@ -12,7 +17,7 @@ def main():
 
     logger.config_logger()
 
-    matmul.matmul([2, 2], [3, 3])
+    # matmul.matmul([2, 2], [3, 3])
 
 
 if __name__ == '__main__':
