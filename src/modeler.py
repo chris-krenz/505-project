@@ -1,15 +1,19 @@
-import pickle
+import os
 import json
+import pickle
+
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 
+from config import ROOT_DIR
 
 # File paths
-PREPROCESSED_FILE = "synthetic_biology_preprocessed.json"
-TOPIC_MODEL_FILE = "lda_model.pkl"
-COUNT_VECTORIZER_FILE = "count_vectorizer.pkl"
-N_TOPICS = 10  # Adjust based on your needs
+PREPROCESSED_FILE     = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
+TOPIC_MODEL_FILE      = os.path.join(ROOT_DIR, "data", "lda_model.pkl")
+COUNT_VECTORIZER_FILE = os.path.join(ROOT_DIR, "data", "count_vectorizer.pkl")
+N_TOPICS    = 10  # Adjust based on your needs
 TOP_N_WORDS = 10  # Number of top words to display per topic
+
 
 def load_corpus(filepath):
     """Load preprocessed sentences from a JSON file."""

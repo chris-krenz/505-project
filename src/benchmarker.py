@@ -1,11 +1,14 @@
+import os
 import json
 import pickle
-import os
+
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+
+from config import ROOT_DIR
 
 
 def load_data(preprocessed_file, labels_file):
@@ -159,11 +162,11 @@ def save_model(model, vectorizer, model_path, vectorizer_path):
 
 def main():
     # File paths
-    PREPROCESSED_FILE = "synthetic_biology_preprocessed.json"
-    LABELS_FILE = "labels.json"
-    LOG_REG_MODEL_PATH = "logistic_regression_model.pkl"
-    DUMMY_MODEL_PATH = "dummy_classifier.pkl"
-    VECTORIZER_PATH = "tfidf_vectorizer.pkl"
+    PREPROCESSED_FILE  = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
+    LABELS_FILE        = os.path.join(ROOT_DIR, "data", "labels.json")
+    LOG_REG_MODEL_PATH = os.path.join(ROOT_DIR, "data", "logistic_regression_model.pkl")
+    DUMMY_MODEL_PATH   = os.path.join(ROOT_DIR, "data", "dummy_classifier.pkl")
+    VECTORIZER_PATH    = os.path.join(ROOT_DIR, "data", "tfidf_vectorizer.pkl")
     
     # Load data
     sentences, labels = load_data(PREPROCESSED_FILE, LABELS_FILE)

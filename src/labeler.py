@@ -1,58 +1,25 @@
+import os
 import json
 import re
 
+from config import ROOT_DIR
+
+with open('KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
+    KEYWORD_LABEL_MAP = json.load(file)
+
 # File paths
-INPUT_FILE = "synthetic_biology_preprocessed.json"
-OUTPUT_LABELS_FILE = "labels.json"
+INPUT_FILE         = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
+OUTPUT_LABELS_FILE = os.path.join(ROOT_DIR, "data", "labels.json")
 
 # Define your keywords and corresponding labels
 # You can customize the labels as needed
-KEYWORD_LABEL_MAP = {  # TODO: add multiple keywords per service (e.g. 'golden gate' and 'modular cloning' both map to the same service)
-    "gibson assembly": "Gibson Assembly",
-    "modular cloning": "Modular Cloning",
-    "restriction digestion": "Restriction Digestion",
-    "restriction ligation": "Restriction Ligation",
-    "pcr reaction": "PCR Reaction",
-    "colony pcr": "Colony PCR",
-    "temperature gradient test": "Temperature Gradient Test",
-    "pcr cleanup": "PCR Cleanup",
-    "gel electrophoresis": "Gel Electrophoresis",
-    "agarose gel extraction": "Agarose Gel Extraction",
-    "concentrate dna": "Concentrate DNA",
-    "ethanol precipitation": "Ethanol Precipitation",
-    "dna extraction": "DNA Extraction",
-    "plasmid miniprep": "Plasmid Miniprep",
-    "glycerol stock": "Glycerol Stock",
-    "plasmid midiprep": "Plasmid Midiprep",
-    "plasmid maxiprep": "Plasmid Maxiprep",
-    "sample to sequencing": "Sample to Sequencing",
-    "rehydrate dna": "Rehydrate DNA",
-    "order dna fragments": "Order DNA Fragments",
-    "design and order primers": "Design and Order Primers",
-    "spectrophotometric assay": "Spectrophotometric Assay",
-    "qpcr assay": "qPCR Assay",
-    "next-generation sequencing": "Next-Generation Sequencing",
-    "nextseq 2000": "NextSeq 2000",
-    "opentrons liquid handler": "Opentrons Liquid Handler",
-    "hamilton liquid handler": "Hamilton Liquid Handler",
-    "cell culture induction": "Cell Culture Induction",
-    "cell lysate production": "Cell Lysate Production",
-    "protein purification": "Protein Purification",
-    "cell transformation": "Cell Transformation",
-    "overnight inoculum": "Overnight Inoculum",
-    "e. coli lb growth": "E. coli LB Growth",
-    "e. coli m9 growth": "E. coli M9 Growth",
-    "e. coli x agar plate": "E. coli X Agar Plate",
-    "plasmid storage": "Plasmid Storage",
-    "glycerol stock": "Glycerol Stock",
-    "lb agar plate": "LB Agar Plate",
-}
 
 # Precompile regex patterns for efficiency and case-insensitivity
 KEYWORD_PATTERNS = { 
     keyword: re.compile(r'\b' + re.escape(keyword) + r'\b', re.IGNORECASE) 
     for keyword in KEYWORD_LABEL_MAP.keys()
 }
+
 
 def load_sentences(filepath):
     """Load preprocessed sentences from a JSON file."""

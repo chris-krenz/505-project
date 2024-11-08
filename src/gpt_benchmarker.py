@@ -1,12 +1,19 @@
 import os
-import json
 import time
-import openai
+import json
 import pickle
 from dotenv import load_dotenv
+
+import openai
+
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
+from config import ROOT_DIR
+
 load_dotenv()
+
+with open('KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
+    KEYWORD_LABEL_MAP = json.load(file)
 
 # Configure OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -14,15 +21,9 @@ if not openai.api_key:
     raise ValueError("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
 
 # File paths
-PREPROCESSED_FILE = "synthetic_biology_preprocessed.json"
-GROUND_TRUTH_LABELS_FILE = "labels.json"
-GPT4_LABELS_FILE = "gpt4_labels.json"
-
-# Define your keywords and corresponding labels
-KEYWORD_LABEL_MAP = {
-    "gibson assembly": "Gibson Assembly",
-    "modular cloning": "Modular Cloning",
-}
+PREPROCESSED_FILE        = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
+GROUND_TRUTH_LABELS_FILE = os.path.join(ROOT_DIR, "data", "labels.json")
+GPT4_LABELS_FILE         = os.path.join(ROOT_DIR, "data", "gpt4_labels.json")
 
 # Precompile regex patterns for efficiency and case-insensitivity
 import re
@@ -30,6 +31,7 @@ KEYWORD_PATTERNS = {
     keyword: re.compile(r'\b' + re.escape(keyword) + r'\b', re.IGNORECASE) 
     for keyword in KEYWORD_LABEL_MAP.keys()
 }
+
 
 def load_json(filepath):
     """Load JSON data from a file."""
@@ -170,7 +172,7 @@ def main():
 
     # Assign keyword-based labels for comparison
     keyword_labels = assign_labels_with_keywords(sentences, KEYWORD_PATTERNS, KEYWORD_LABEL_MAP)
-    save_json(keyword_labels, "keyword_labels.json")  # Optional: Save keyword-based labels
+    save_json(keyword_labels, os.path.join(ROOT_DIR, "data", "keyword_labels.json"))  # Optional: Save keyword-based labels
 
     # Generate GPT-4 labels
     keyword_list = list(KEYWORD_LABEL_MAP.keys())

@@ -1,56 +1,22 @@
+import os
 import json
+
 import nltk
 from nltk.tokenize import sent_tokenize
 
+from config import ROOT_DIR
 
 # Ensure necessary NLTK data files are downloaded
-nltk.download('punkt_tab')
+nltk.download('punkt_tab')  # TODO: Use 'punkt' instead
 
-# Define your keywords related to synthetic biology
-KEYWORDS = [  # TODO: add multiple keywords per service (e.g. 'golden gate' and 'modular cloning' both map to the same service)
-    "gibson assembly",
-    "modular cloning",
-    "restriction digestion",
-    "restriction ligation",
-    "pcr reaction",
-    "colony pcr",
-    "temperature gradient test",
-    "pcr cleanup",
-    "gel electrophoresis",
-    "agarose gel extraction",
-    "concentrate dna",
-    "ethanol precipitation",
-    "dna extraction",
-    "plasmid miniprep",
-    "glycerol stock",
-    "plasmid midiprep",
-    "plasmid maxiprep",
-    "sample to sequencing",
-    "rehydrate dna",
-    "order dna fragments",
-    "design and order primers",
-    "spectrophotometric assay",
-    "qpcr assay",
-    "next-generation sequencing",
-    "nextseq 2000",
-    "opentrons liquid handler",
-    "hamilton liquid handler",
-    "cell culture induction",
-    "cell lysate production",
-    "protein purification",
-    "cell transformation",
-    "overnight inoculum",
-    "e. coli lb growth",
-    "e. coli m9 growth",
-    "e. coli x agar plate",
-    "plasmid storage",
-    "glycerol stock",
-    "lb agar plate",
-]
+# TODO: add multiple keywords per service (e.g. 'golden gate' and 'modular cloning' both map to the same service)
+with open('KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
+    KEYWORDS = json.load(file).keys()
 
 # File paths
-INPUT_JSON = "synthetic_biology_abstracts.json"
-OUTPUT_JSON = "synthetic_biology_corpus.json"  # You can also use .txt if preferred
+INPUT_JSON  = os.path.join(ROOT_DIR, "data", "synthetic_biology_abstracts.json")
+OUTPUT_JSON = os.path.join(ROOT_DIR, "data", "synthetic_biology_corpus.json")  # You can also use .txt if preferred
+
 
 def load_abstracts(filepath):
     """Load abstracts from a JSON file."""

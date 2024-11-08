@@ -1,10 +1,15 @@
+import os
+import string
 import json
+import pickle
+
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+
 from sklearn.feature_extraction.text import TfidfVectorizer
-import string
-import pickle
+
+from config import ROOT_DIR
 
 
 # Ensure necessary NLTK data files are downloaded
@@ -13,10 +18,10 @@ nltk.download('punkt_tab')
 nltk.download('wordnet')
 
 # File paths
-INPUT_FILE = "synthetic_biology_corpus.json"  # Change to .txt if you saved as text
-PREPROCESSED_FILE = "synthetic_biology_preprocessed.json"
-VECTORIZER_FILE = "tfidf_vectorizer.pkl"
-VECTORIZED_DATA_FILE = "tfidf_vectors.pkl"
+INPUT_FILE           = os.path.join(ROOT_DIR, "data", "synthetic_biology_corpus.json")  # Change to .txt if you saved as text
+PREPROCESSED_FILE    = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
+VECTORIZER_FILE      = os.path.join(ROOT_DIR, "data", "tfidf_vectorizer.pkl")
+VECTORIZED_DATA_FILE = os.path.join(ROOT_DIR, "data", "tfidf_vectors.pkl")
 
 # Initialize tools
 stop_words = set(stopwords.words('english'))

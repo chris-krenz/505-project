@@ -1,10 +1,15 @@
-from Bio import Entrez
+import os
 import time
 import json
-import os
 from dotenv import load_dotenv
 
+from Bio import Entrez
+
 from utils import logger
+from config import ROOT_DIR
+
+with open('KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
+    KEYWORDS = json.load(file).keys()
 
 load_dotenv()
 
@@ -16,56 +21,14 @@ load_dotenv()
 # Set your email (required by NCBI)
 Entrez.email = os.getenv("PUBMED_EMAIL")  # Replace with your actual email
 
-# Define your search keywords
-keywords = [  # TODO: add multiple keywords per service (e.g. 'golden gate' and 'modular cloning' both map to the same service)
-    "gibson assembly",
-    "modular cloning",
-    "restriction digestion",
-    "restriction ligation",
-    "pcr reaction",
-    "colony pcr",
-    "temperature gradient test",
-    "pcr cleanup",
-    "gel electrophoresis",
-    "agarose gel extraction",
-    "concentrate dna",
-    "ethanol precipitation",
-    "dna extraction",
-    "plasmid miniprep",
-    "glycerol stock",
-    "plasmid midiprep",
-    "plasmid maxiprep",
-    "sample to sequencing",
-    "rehydrate dna",
-    "order dna fragments",
-    "design and order primers",
-    "spectrophotometric assay",
-    "qpcr assay",
-    "next-generation sequencing",
-    "nextseq 2000",
-    "opentrons liquid handler",
-    "hamilton liquid handler",
-    "cell culture induction",
-    "cell lysate production",
-    "protein purification",
-    "cell transformation",
-    "overnight inoculum",
-    "e. coli lb growth",
-    "e. coli m9 growth",
-    "e. coli x agar plate",
-    "plasmid storage",
-    "glycerol stock",
-    "lb agar plate",
-]
-
 # Create a search query using Boolean OR
-search_query = ' OR '.join([f'"{keyword}"' for keyword in keywords])
+search_query = ' OR '.join([f'"{keyword}"' for keyword in KEYWORDS])
 
 # Define the maximum number of abstracts to retrieve
 max_abstracts = 10_000  # Adjust as needed (maximum allowed by PubMed per request is 10,000)
 
 # Define the output JSON file path
-output_file = "synthetic_biology_abstracts.json"
+output_file = os.path.join(ROOT_DIR, "data", "synthetic_biology_abstracts.json")
 
 # --------------- PubMed Search ---------------
 

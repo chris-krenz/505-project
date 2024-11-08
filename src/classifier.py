@@ -1,12 +1,16 @@
+import os
 import json
 import pickle
-import os
+from collections import Counter
+
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
-from collections import Counter
+
+from config import ROOT_DIR
+
 
 def load_json(filepath):
     """Load JSON data from a file."""
@@ -101,11 +105,11 @@ def filter_out_other(sentences, labels, other_label="Other"):
 
 def main():
     # Define file paths
-    PREPROCESSED_FILE = "synthetic_biology_preprocessed.json"
-    GROUND_TRUTH_LABELS_FILE = "labels.json"
-    LOG_REG_MODEL_PATH = "logistic_regression_model.pkl"
-    DUMMY_MODEL_PATH = "dummy_classifier.pkl"
-    VECTORIZER_PATH = "tfidf_vectorizer.pkl"
+    PREPROCESSED_FILE        = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
+    GROUND_TRUTH_LABELS_FILE = os.path.join(ROOT_DIR, "data", "labels.json")
+    LOG_REG_MODEL_PATH       = os.path.join(ROOT_DIR, "data", "logistic_regression_model.pkl")
+    DUMMY_MODEL_PATH         = os.path.join(ROOT_DIR, "data", "dummy_classifier.pkl")
+    VECTORIZER_PATH          = os.path.join(ROOT_DIR, "data", "tfidf_vectorizer.pkl")
 
     # Load data
     sentences = load_json(PREPROCESSED_FILE)
