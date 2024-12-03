@@ -1,6 +1,7 @@
 import os
 import json
 import pickle
+from collections import Counter
 
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -70,6 +71,41 @@ def vectorize_text(X_train, X_test, max_features=1000):
     X_test_tfidf = vectorizer.transform(X_test)
     print(f"Vectorized text with TF-IDF. Number of features: {max_features}")
     return vectorizer, X_train_tfidf, X_test_tfidf
+
+def analyze_label_distribution(labels):
+    """
+    Analyze and print the distribution of labels.
+
+    Args:
+        labels (list): List of labels.
+
+    Returns:
+        problematic_classes (list): List of classes with fewer than 2 instances.
+    """
+    label_counts = Counter(labels)
+    print("Label distribution:", label_counts)
+    
+    # Identify classes with fewer than 2 instances
+    problematic_classes = [label for label, count in label_counts.items() if count < 2]
+    print(f"Classes with fewer than 2 instances: {problematic_classes}")
+    
+    return problematic_classes
+
+def merge_rare_classes(labels, problematic_classes, merge_into="Other"):
+    """
+    Merge rare classes into a specified label.
+
+    Args:
+        labels (list): Original list of labels.
+        problematic_classes (list): Classes to be merged.
+        merge_into (str): The label to merge rare classes into.
+
+    Returns:
+        merged_labels (list): Updated list of labels.
+    """
+    merged_labels = [label if label not in problematic_classes else merge_into for label in labels]
+    print(f"Merged {len(problematic_classes)} rare classes into '{merge_into}'.")
+    return merged_labels
 
 def train_logistic_regression(X_train, y_train):
     """
@@ -174,11 +210,25 @@ def main():
         print("Data loading failed. Exiting.")
         return
     
-    # Split data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(
-        sentences, labels, test_size=0.2, random_state=42, stratify=labels
-    )
-    print(f"Split data into {len(X_train)} training and {len(X_test)} testing samples.")
+    # Analyze label distribution
+    problematic_classes = analyze_label_distribution(labels)
+    
+    # Merge rare classes into 'Other'
+    if problematic_classes:
+        labels = merge_rare_classes(labels, problematic_classes, merge_into="Other")
+    
+    # Re-analyze label distribution after merging
+    analyze_label_distribution(labels)
+    
+    # Split data into training and testing sets with stratification
+    try:
+        X_train, X_test, y_train, y_test = train_test_split(
+            sentences, labels, test_size=0.2, random_state=42, stratify=labels
+        )
+        print(f"Split data into {len(X_train)} training and {len(X_test)} testing samples.")
+    except ValueError as ve:
+        print(f"Error during train_test_split: {ve}")
+        return
     
     # Vectorize text
     vectorizer, X_train_tfidf, X_test_tfidf = vectorize_text(X_train, X_test, max_features=1000)
@@ -199,14 +249,17 @@ def main():
     save_model(log_reg_clf, vectorizer, LOG_REG_MODEL_PATH, VECTORIZER_PATH)
     save_model(dummy_clf, vectorizer, DUMMY_MODEL_PATH, VECTORIZER_PATH)
     
-    # Save the metrics to a JSON or text file for later analysis
+    # Save the metrics to a JSON file for later analysis
     metrics_summary = {
         "Logistic Regression": log_reg_metrics,
         "Dummy Classifier": dummy_metrics
     }
-    with open("model_metrics.json", "w") as f:
-        json.dump(metrics_summary, f, indent=4)
-    print("Saved evaluation metrics to model_metrics.json.")
+    try:
+        with open("model_metrics.json", "w") as f:
+            json.dump(metrics_summary, f, indent=4)
+        print("Saved evaluation metrics to model_metrics.json.")
+    except Exception as e:
+        print(f"Error saving metrics to model_metrics.json: {e}")
 
 
 if __name__ == "__main__":
