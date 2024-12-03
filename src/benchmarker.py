@@ -1,12 +1,13 @@
+# benchmarker.py
 import os
 import json
 import pickle
+import argparse
 from collections import Counter
 
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.dummy import DummyClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
 from config import ROOT_DIR
@@ -47,10 +48,10 @@ def load_data(preprocessed_file, labels_file):
     
     # If labels are lists (multi-label), convert to single labels (for simplicity)
     # Here, we assume each sentence has at least one label and take the first one
-    # Modify this part if you have multi-label data and want to handle it differently
     single_labels = [label_list[0] if label_list else "Other" for label_list in labels]
     
     return sentences, single_labels
+
 
 def vectorize_text(X_train, X_test, max_features=1000):
     """
@@ -66,11 +67,12 @@ def vectorize_text(X_train, X_test, max_features=1000):
         X_train_tfidf (sparse matrix): TF-IDF features for training data.
         X_test_tfidf (sparse matrix): TF-IDF features for testing data.
     """
-    vectorizer = TfidfVectorizer(max_features=max_features)
+    vectorizer = TfidfVectorizer(max_features=max_features, ngram_range=(1,2))
     X_train_tfidf = vectorizer.fit_transform(X_train)
     X_test_tfidf = vectorizer.transform(X_test)
     print(f"Vectorized text with TF-IDF. Number of features: {max_features}")
     return vectorizer, X_train_tfidf, X_test_tfidf
+
 
 def analyze_label_distribution(labels):
     """
@@ -91,21 +93,55 @@ def analyze_label_distribution(labels):
     
     return problematic_classes
 
-def merge_rare_classes(labels, problematic_classes, merge_into="Other"):
+
+def remove_rare_classes(sentences, labels, problematic_classes):
     """
-    Merge rare classes into a specified label.
+    Remove sentences and labels that belong to problematic classes.
 
     Args:
+        sentences (list): Original list of sentences.
         labels (list): Original list of labels.
-        problematic_classes (list): Classes to be merged.
-        merge_into (str): The label to merge rare classes into.
+        problematic_classes (list): Classes to be removed.
 
     Returns:
-        merged_labels (list): Updated list of labels.
+        filtered_sentences (list): Sentences after removing problematic classes.
+        filtered_labels (list): Labels after removing problematic classes.
     """
-    merged_labels = [label if label not in problematic_classes else merge_into for label in labels]
-    print(f"Merged {len(problematic_classes)} rare classes into '{merge_into}'.")
-    return merged_labels
+    filtered_sentences = []
+    filtered_labels = []
+    for sentence, label in zip(sentences, labels):
+        if label not in problematic_classes:
+            filtered_sentences.append(sentence)
+            filtered_labels.append(label)
+    print(f"Removed {len(sentences) - len(filtered_sentences)} instances from problematic classes.")
+    return filtered_sentences, filtered_labels
+
+
+def remove_keywords(sentences, labels, labels_keywords):
+    """
+    Remove keywords from sentences based on their labels.
+
+    Args:
+        sentences (list): List of sentences.
+        labels (list): Corresponding list of labels.
+        labels_keywords (dict): Mapping from labels to their associated keywords.
+
+    Returns:
+        modified_sentences (list): Sentences with keywords removed.
+    """
+    modified_sentences = []
+    removal_count = 0
+    for sentence, label in zip(sentences, labels):
+        if label in labels_keywords:
+            # Remove keyword (case-insensitive)
+            sentence = sentence.replace(label, "")
+            sentence = sentence.replace(label.lower(), "")
+            sentence = sentence.replace(label.upper(), "")
+            removal_count += 1
+        modified_sentences.append(sentence)
+    print(f"Removed {removal_count} keywords from sentences based on labels.")
+    return modified_sentences
+
 
 def train_logistic_regression(X_train, y_train):
     """
@@ -118,27 +154,11 @@ def train_logistic_regression(X_train, y_train):
     Returns:
         clf (LogisticRegression): Trained Logistic Regression model.
     """
-    clf = LogisticRegression(max_iter=1000, random_state=42)
+    clf = LogisticRegression(max_iter=1000, random_state=42, penalty='l2')
     clf.fit(X_train, y_train)
     print("Trained Logistic Regression classifier.")
     return clf
 
-def train_dummy_classifier(X_train, y_train, strategy='most_frequent'):
-    """
-    Train a Dummy classifier as a baseline.
-    
-    Args:
-        X_train (sparse matrix): TF-IDF features for training data.
-        y_train (list): Training labels.
-        strategy (str): Strategy for the Dummy classifier ('most_frequent', 'stratified', etc.).
-        
-    Returns:
-        dummy_clf (DummyClassifier): Trained Dummy classifier.
-    """
-    dummy_clf = DummyClassifier(strategy=strategy, random_state=42)
-    dummy_clf.fit(X_train, y_train)
-    print(f"Trained Dummy classifier with strategy='{strategy}'.")
-    return dummy_clf
 
 def evaluate_model(model, X_test, y_test, model_name="Model"):
     """
@@ -168,9 +188,10 @@ def evaluate_model(model, X_test, y_test, model_name="Model"):
     metrics = {
         "accuracy": accuracy,
         "classification_report": report,
-        "confusion_matrix": cm
+        "confusion_matrix": cm.tolist()  # Convert to list for JSON serialization
     }
     return metrics
+
 
 def save_model(model, vectorizer, model_path, vectorizer_path):
     """
@@ -196,14 +217,38 @@ def save_model(model, vectorizer, model_path, vectorizer_path):
     except Exception as e:
         print(f"Error saving vectorizer to {vectorizer_path}: {e}")
 
+
+def parse_arguments():
+    """
+    Parse command-line arguments.
+    
+    Returns:
+        args: Parsed arguments.
+    """
+    parser = argparse.ArgumentParser(description="Benchmark Logistic Regression Classifier")
+    parser.add_argument(
+        '--remove-keywords',
+        action='store_true',
+        help='Flag to remove keywords from sentences based on their labels.'
+    )
+    return parser.parse_args()
+
+
 def main():
+    args = parse_arguments()
+    
     # File paths
     PREPROCESSED_FILE  = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
     LABELS_FILE        = os.path.join(ROOT_DIR, "data", "labels.json")
     LOG_REG_MODEL_PATH = os.path.join(ROOT_DIR, "data", "logistic_regression_model.pkl")
-    DUMMY_MODEL_PATH   = os.path.join(ROOT_DIR, "data", "dummy_classifier.pkl")
     VECTORIZER_PATH    = os.path.join(ROOT_DIR, "data", "tfidf_vectorizer.pkl")
-    
+    KEYWORDS_PATH      = os.path.join(ROOT_DIR, "src",  "KEYWORD_LABEL_MAP.json")
+
+    # Define label to keyword mapping
+    with open(KEYWORDS_PATH, 'r', encoding='utf-8') as file:
+        KEYWORDS = json.load(file).values()
+    labels_keywords = KEYWORDS
+
     # Load data
     sentences, labels = load_data(PREPROCESSED_FILE, LABELS_FILE)
     if not sentences or not labels:
@@ -213,17 +258,30 @@ def main():
     # Analyze label distribution
     problematic_classes = analyze_label_distribution(labels)
     
-    # Merge rare classes into 'Other'
+    # Remove rare classes
     if problematic_classes:
-        labels = merge_rare_classes(labels, problematic_classes, merge_into="Other")
+        sentences, labels = remove_rare_classes(sentences, labels, problematic_classes)
     
-    # Re-analyze label distribution after merging
+    # Re-analyze label distribution after removal
     analyze_label_distribution(labels)
     
-    # Split data into training and testing sets with stratification
+    # Exclude 'Other' category
+    sentences_filtered = []
+    labels_filtered = []
+    for sentence, label in zip(sentences, labels):
+        if label != "Other":
+            sentences_filtered.append(sentence)
+            labels_filtered.append(label)
+    print(f"Excluded 'Other' category. Remaining instances: {len(sentences_filtered)}")
+    
+    # Optionally remove keywords
+    if args.remove_keywords:
+        sentences_filtered = remove_keywords(sentences_filtered, labels_filtered, labels_keywords)
+    
+    # Split data into training and testing sets
     try:
         X_train, X_test, y_train, y_test = train_test_split(
-            sentences, labels, test_size=0.2, random_state=42, stratify=labels
+            sentences_filtered, labels_filtered, test_size=0.2, random_state=42, stratify=labels_filtered
         )
         print(f"Split data into {len(X_train)} training and {len(X_test)} testing samples.")
     except ValueError as ve:
@@ -236,23 +294,15 @@ def main():
     # Train Logistic Regression
     log_reg_clf = train_logistic_regression(X_train_tfidf, y_train)
     
-    # Train Dummy Classifier
-    dummy_clf = train_dummy_classifier(X_train_tfidf, y_train, strategy='most_frequent')
-    
     # Evaluate Logistic Regression
     log_reg_metrics = evaluate_model(log_reg_clf, X_test_tfidf, y_test, model_name="Logistic Regression")
     
-    # Evaluate Dummy Classifier
-    dummy_metrics = evaluate_model(dummy_clf, X_test_tfidf, y_test, model_name="Dummy Classifier")
-    
     # Save models and vectorizer
     save_model(log_reg_clf, vectorizer, LOG_REG_MODEL_PATH, VECTORIZER_PATH)
-    save_model(dummy_clf, vectorizer, DUMMY_MODEL_PATH, VECTORIZER_PATH)
     
     # Save the metrics to a JSON file for later analysis
     metrics_summary = {
-        "Logistic Regression": log_reg_metrics,
-        "Dummy Classifier": dummy_metrics
+        "Logistic Regression": log_reg_metrics
     }
     try:
         with open("model_metrics.json", "w") as f:
