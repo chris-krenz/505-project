@@ -4,4 +4,6 @@ __pycache__/
 /venv
 .DS_Store
 .env
-data/
+other_data/
+examples/
+logs/

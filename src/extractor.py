@@ -6,16 +6,14 @@ from nltk.tokenize import sent_tokenize
 
 from config import ROOT_DIR
 
-# Ensure necessary NLTK data files are downloaded
 nltk.download('punkt_tab')  # TODO: Use 'punkt' instead
 
 # TODO: add multiple keywords per service (e.g. 'golden gate' and 'modular cloning' both map to the same service)
-with open('KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
+with open('src/KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
     KEYWORDS = json.load(file).keys()
 
-# File paths
 INPUT_JSON  = os.path.join(ROOT_DIR, "data", "synthetic_biology_abstracts.json")
-OUTPUT_JSON = os.path.join(ROOT_DIR, "data", "synthetic_biology_corpus.json")  # You can also use .txt if preferred
+OUTPUT_JSON = os.path.join(ROOT_DIR, "data", "synthetic_biology_corpus.json")
 
 
 def load_abstracts(filepath):
@@ -27,6 +25,7 @@ def load_abstracts(filepath):
     except Exception as e:
         print(f"Error loading JSON file: {e}")
         return []
+
 
 def extract_sentences(abstracts, keywords):
     corpus = []
@@ -40,6 +39,8 @@ def extract_sentences(abstracts, keywords):
                 corpus.append(sentence)
     print(f"Extracted {len(corpus)} relevant sentences.")
     return corpus
+
+
 
 def save_corpus(corpus, filepath):
     try:
@@ -57,6 +58,7 @@ def save_corpus(corpus, filepath):
     except Exception as e:
         print(f"Error saving corpus: {e}")
 
+
 def main():
     abstracts = load_abstracts(INPUT_JSON)
     if not abstracts:
@@ -67,6 +69,7 @@ def main():
         print("No relevant sentences found.")
         return
     save_corpus(corpus, OUTPUT_JSON)
+
 
 if __name__ == "__main__":
     main()

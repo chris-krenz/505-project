@@ -4,17 +4,13 @@ import re
 
 from config import ROOT_DIR
 
-with open('KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
+with open('src/KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
     KEYWORD_LABEL_MAP = json.load(file)
 
-# File paths
 INPUT_FILE         = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
 OUTPUT_LABELS_FILE = os.path.join(ROOT_DIR, "data", "labels.json")
 
-# Define your keywords and corresponding labels
-# You can customize the labels as needed
 
-# Precompile regex patterns for efficiency and case-insensitivity
 KEYWORD_PATTERNS = { 
     keyword: re.compile(r'\b' + re.escape(keyword) + r'\b', re.IGNORECASE) 
     for keyword in KEYWORD_LABEL_MAP.keys()
@@ -45,6 +41,7 @@ def assign_labels(sentences, keyword_patterns, label_map):
             print(f"Processed {idx + 1}/{len(sentences)} sentences.")
     return labels
 
+
 def save_labels(labels, filepath):
     try:
         with open(filepath, 'w', encoding='utf-8') as f:
@@ -53,18 +50,17 @@ def save_labels(labels, filepath):
     except Exception as e:
         print(f"Error saving labels: {e}")
 
+
 def main():
-    # Load sentences
     sentences = load_sentences(INPUT_FILE)
     if not sentences:
         print("No sentences to process. Exiting.")
         return
     
-    # Assign labels
     labels = assign_labels(sentences, KEYWORD_PATTERNS, KEYWORD_LABEL_MAP)
     
-    # Save labels
     save_labels(labels, OUTPUT_LABELS_FILE)
+
 
 if __name__ == "__main__":
     main()

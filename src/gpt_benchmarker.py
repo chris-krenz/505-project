@@ -12,17 +12,20 @@ from config import ROOT_DIR
 
 load_dotenv()
 
-with open('KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
+with open('src/KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
     KEYWORD_LABEL_MAP = json.load(file)
 
+# Configure OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 if not openai.api_key:
     raise ValueError("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
 
+# File paths
 PREPROCESSED_FILE        = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
 GROUND_TRUTH_LABELS_FILE = os.path.join(ROOT_DIR, "data", "labels.json")
 GPT4_LABELS_FILE         = os.path.join(ROOT_DIR, "data", "gpt4_labels.json")
 
+# Precompile regex patterns for efficiency and case-insensitivity
 import re
 KEYWORD_PATTERNS = { 
     keyword: re.compile(r'\b' + re.escape(keyword) + r'\b', re.IGNORECASE) 
@@ -31,6 +34,7 @@ KEYWORD_PATTERNS = {
 
 
 def load_json(filepath):
+    """Load JSON data from a file."""
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -41,6 +45,7 @@ def load_json(filepath):
         return []
 
 def save_json(data, filepath):
+    """Save JSON data to a file."""
     try:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -49,6 +54,7 @@ def save_json(data, filepath):
         print(f"Error saving to {filepath}: {e}")
 
 def assign_labels_with_keywords(sentences, keyword_patterns, label_map):
+    """Assign labels to sentences based on keyword presence."""
     labels = []
     for idx, sentence in enumerate(sentences):
         sentence_labels = []
@@ -63,6 +69,18 @@ def assign_labels_with_keywords(sentences, keyword_patterns, label_map):
     return labels
 
 def generate_gpt4_labels(sentences, keyword_list, batch_size=10, sleep_time=1):
+    """
+    Use GPT-4 to label sentences based on keywords.
+
+    Args:
+        sentences (list): List of sentences to label.
+        keyword_list (list): List of keywords to consider.
+        batch_size (int): Number of sentences per API call.
+        sleep_time (int): Seconds to wait between API calls.
+
+    Returns:
+        list: List of GPT-4 generated labels corresponding to each sentence.
+    """
     gpt4_labels = []
     total_sentences = len(sentences)
     for i in range(0, total_sentences, batch_size):
@@ -108,9 +126,29 @@ def generate_gpt4_labels(sentences, keyword_list, batch_size=10, sleep_time=1):
     return gpt4_labels
 
 def flatten_labels(labels):
+    """
+    Flatten multi-label lists to single labels by joining with a comma.
+
+    Args:
+        labels (list of lists): Multi-label list.
+
+    Returns:
+        list: List of single string labels.
+    """
     return [", ".join(label_list) for label_list in labels]
 
 def evaluate_predictions(y_true, y_pred, average='macro'):
+    """
+    Evaluate predictions against true labels.
+
+    Args:
+        y_true (list): Ground truth labels.
+        y_pred (list): Predicted labels.
+        average (str): Averaging method for multi-class metrics.
+
+    Returns:
+        None: Prints the evaluation metrics.
+    """
     print("\n=== GPT-4 Evaluation ===")
     accuracy = accuracy_score(y_true, y_pred)
     print(f"Accuracy: {accuracy:.4f}")

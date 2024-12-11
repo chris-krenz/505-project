@@ -11,18 +11,19 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from config import ROOT_DIR
 
+
 nltk.download('stopwords')
 nltk.download('punkt_tab')
 nltk.download('wordnet')
 
-INPUT_FILE           = os.path.join(ROOT_DIR, "data", "synthetic_biology_corpus.json")  # Change to .txt if you saved as text
+INPUT_FILE           = os.path.join(ROOT_DIR, "data", "synthetic_biology_corpus.json")
 PREPROCESSED_FILE    = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
 VECTORIZER_FILE      = os.path.join(ROOT_DIR, "data", "tfidf_vectorizer.pkl")
 VECTORIZED_DATA_FILE = os.path.join(ROOT_DIR, "data", "tfidf_vectors.pkl")
 
-# Initialize tools
 stop_words = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
+
 
 def load_corpus(filepath):
     try:
@@ -53,7 +54,7 @@ def preprocess_corpus(sentences):
     preprocessed = []
     for sentence in sentences:
         processed = preprocess_sentence(sentence)
-        if processed:  # Ensure sentence is not empty after preprocessing
+        if processed:
             preprocessed.append(processed)
     print(f"Preprocessed {len(preprocessed)} sentences.")
     return preprocessed
@@ -69,30 +70,28 @@ def save_preprocessed_corpus(preprocessed_sentences, filepath):
 def vectorize_corpus(preprocessed_sentences, vectorizer_path, data_path):
     vectorizer = TfidfVectorizer()
     tfidf_vectors = vectorizer.fit_transform(preprocessed_sentences)
-    # Save the vectorizer
     with open(vectorizer_path, 'wb') as file:
         pickle.dump(vectorizer, file)
     print(f"Saved TF-IDF vectorizer to {vectorizer_path}.")
-    # Save the vectors
+
     with open(data_path, 'wb') as file:
         pickle.dump(tfidf_vectors, file)
     print(f"Saved TF-IDF vectors to {data_path}.")
 
+
+
 def main():
-    # Load corpus
     sentences = load_corpus(INPUT_FILE)
     if not sentences:
         print("No sentences to process.")
         return
-    # Preprocess sentences
     preprocessed = preprocess_corpus(sentences)
     if not preprocessed:
         print("No sentences left after preprocessing.")
         return
-    # Save preprocessed corpus
     save_preprocessed_corpus(preprocessed, PREPROCESSED_FILE)
-    # Vectorize and save TF-IDF vectors
     vectorize_corpus(preprocessed, VECTORIZER_FILE, VECTORIZED_DATA_FILE)
+
 
 if __name__ == "__main__":
     main()
