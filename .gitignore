@@ -5,3 +5,5 @@ __pycache__/
 .DS_Store
 .env
 other_data/
+examples/
+logs/

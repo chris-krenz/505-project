@@ -19,8 +19,10 @@ pip install -r requirements.txt
 If you want to just use the existing data and models, you can just run the benchmarker.
 
 ```console
-python src/benchmarker.py
+python src/benchmarker.py --remove-keywords
 ```
+
+(Removing keywords from the sentences helps to avoid overfitting.)
 
 If you want to run all steps, including data fetching and processing, you can run the following scripts first:
 
@@ -30,6 +32,8 @@ python src/extractor.py
 python src/preprocessor.py
 python src/labeler.py
 ```
+
+NOTE: If using the fetcher.py, you will need to set an env var for PUBMED_EMAIL.
 
 If you want to run the model on a specific sentence, you can use the classify_sentence.py script.
 

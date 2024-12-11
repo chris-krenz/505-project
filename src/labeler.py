@@ -7,14 +7,10 @@ from config import ROOT_DIR
 with open('src/KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
     KEYWORD_LABEL_MAP = json.load(file)
 
-# File paths
 INPUT_FILE         = os.path.join(ROOT_DIR, "data", "synthetic_biology_preprocessed.json")
 OUTPUT_LABELS_FILE = os.path.join(ROOT_DIR, "data", "labels.json")
 
-# Define your keywords and corresponding labels
-# You can customize the labels as needed
 
-# Precompile regex patterns for efficiency and case-insensitivity
 KEYWORD_PATTERNS = { 
     keyword: re.compile(r'\b' + re.escape(keyword) + r'\b', re.IGNORECASE) 
     for keyword in KEYWORD_LABEL_MAP.keys()
@@ -22,7 +18,6 @@ KEYWORD_PATTERNS = {
 
 
 def load_sentences(filepath):
-    """Load preprocessed sentences from a JSON file."""
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             sentences = json.load(f)
@@ -33,7 +28,6 @@ def load_sentences(filepath):
         return []
 
 def assign_labels(sentences, keyword_patterns, label_map):
-    """Assign labels to sentences based on keyword presence."""
     labels = []
     for idx, sentence in enumerate(sentences):
         sentence_labels = []
@@ -47,8 +41,8 @@ def assign_labels(sentences, keyword_patterns, label_map):
             print(f"Processed {idx + 1}/{len(sentences)} sentences.")
     return labels
 
+
 def save_labels(labels, filepath):
-    """Save the labels to a JSON file."""
     try:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(labels, f, ensure_ascii=False, indent=2)
@@ -56,18 +50,17 @@ def save_labels(labels, filepath):
     except Exception as e:
         print(f"Error saving labels: {e}")
 
+
 def main():
-    # Load sentences
     sentences = load_sentences(INPUT_FILE)
     if not sentences:
         print("No sentences to process. Exiting.")
         return
     
-    # Assign labels
     labels = assign_labels(sentences, KEYWORD_PATTERNS, KEYWORD_LABEL_MAP)
     
-    # Save labels
     save_labels(labels, OUTPUT_LABELS_FILE)
+
 
 if __name__ == "__main__":
     main()
