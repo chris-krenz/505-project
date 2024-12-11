@@ -10,7 +10,7 @@ from config import ROOT_DIR
 nltk.download('punkt_tab')  # TODO: Use 'punkt' instead
 
 # TODO: add multiple keywords per service (e.g. 'golden gate' and 'modular cloning' both map to the same service)
-with open('KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
+with open('src/KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
     KEYWORDS = json.load(file).keys()
 
 # File paths

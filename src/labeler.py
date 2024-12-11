@@ -4,7 +4,7 @@ import re
 
 from config import ROOT_DIR
 
-with open('KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
+with open('src/KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
     KEYWORD_LABEL_MAP = json.load(file)
 
 # File paths

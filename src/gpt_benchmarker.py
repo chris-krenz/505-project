@@ -12,7 +12,7 @@ from config import ROOT_DIR
 
 load_dotenv()
 
-with open('KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
+with open('src/KEYWORD_LABEL_MAP.json', 'r', encoding='utf-8') as file:
     KEYWORD_LABEL_MAP = json.load(file)
 
 # Configure OpenAI API key
